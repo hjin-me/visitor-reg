@@ -6,26 +6,28 @@
             crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-    <title>测试</title>
+    <title>管理员 - 最近访客</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
 <table class="table">
     <thead>
     <tr>
-        <th>ID</th>
-        <th>姓名</th>
+        <th>访客姓名</th>
         <th>电话</th>
+        <th>公司</th>
         <th>拜访时间</th>
+        <th>拜访对象</th>
     </tr>
     </thead>
     <tbody>
     {% for s in visitors %}
     <tr>
-        <td>{{ s.id }}</td>
-        <td>{{ s.name }}</td>
+        <td>{{ s.appellation}}</td>
         <td>{{ s.mobile_phone_no }}</td>
-        <td>{{ s.last_visit_date }}</td>
+        <td>{{ s.company }}</td>
+        <td>{{ s.last_visit_date.format(time_format)? }}</td>
+        <td>{{ s.invited_by }}</td>
     </tr>
     {% endfor %}
     </tbody>

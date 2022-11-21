@@ -5,51 +5,43 @@ use axum::{
     response::{Html, IntoResponse, Response},
 };
 use serde::Deserialize;
+use time::format_description;
+use time::format_description::FormatItem;
 use crate::data::visitor::{Visitor, latest_visitors};
 use crate::data::get_conn;
 
 #[derive(Deserialize)]
 pub struct Pagination {
-    pn: i64,
-    ps: i64,
+    pn: Option<i64>,
+    ps: Option<i64>,
 }
 
 pub async fn adm_visitors(Query(pagination): Query<Pagination>) -> impl IntoResponse {
     let pool = get_conn().await.unwrap();
     let conn = pool.get().await.unwrap();
-    let vs = latest_visitors(&conn, pagination.pn, pagination.ps)
+    let pn = pagination.pn.unwrap_or(0);
+    let ps = pagination.ps.unwrap_or(10);
+    let vs = latest_visitors(&conn, pn, ps)
         .await.unwrap();
+    let format = format_description::parse(
+        "[year]-[month]-[day] [hour]:[minute]",
+    ).unwrap();
 
     let template = HelloTemplate {
-        pn: pagination.pn,
-        ps: pagination.ps,
+        pn,
+        ps,
         visitors: vs,
+        time_format: format,
     };
-    HtmlTemplate(template)
+    crate::apis::HtmlTemplate(template)
 }
 
 #[derive(Template)]
 #[template(path = "adm_visitors.html")]
-struct HelloTemplate {
+struct HelloTemplate<'a> {
     visitors: Vec<Visitor>,
     pn: i64,
     ps: i64,
+    time_format: Vec<FormatItem<'a>>,
 }
 
-struct HtmlTemplate<T>(T);
-
-impl<T> IntoResponse for HtmlTemplate<T>
-    where
-        T: Template,
-{
-    fn into_response(self) -> Response {
-        match self.0.render() {
-            Ok(html) => Html(html).into_response(),
-            Err(err) => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to render template. Error: {}", err),
-            )
-                .into_response(),
-        }
-    }
-}
