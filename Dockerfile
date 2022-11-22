@@ -1,4 +1,4 @@
-FROM harbor.avlyun.org/public/rust:latest as builder
+FROM rust:latest as builder
 ENV CARGO_HOME /build/.cargo
 WORKDIR /build
 COPY . .
@@ -21,5 +21,5 @@ RUN locale-gen zh_CN.UTF-8; \
 RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime;
 ENV TZ Asia/Shanghai
 ENV LANG zh_US.utf8
-COPY --from=builder /output/release/hello_rust /usr/local/bin/hello_rust
-CMD ["hello_rust"]
+COPY --from=builder /output/release/visitorreg /usr/local/bin/visitorreg
+CMD ["visitorreg"]
