@@ -1,14 +1,17 @@
+use std::sync::Arc;
 use askama::Template;
 use axum::{
-    extract::{Query},
-    http::StatusCode,
-    response::{Html, IntoResponse, Response},
+    extract::{Query, State},
+    response::{IntoResponse},
 };
+use bb8::Pool;
+use bb8_postgres::PostgresConnectionManager;
 use serde::Deserialize;
 use time::format_description;
 use time::format_description::FormatItem;
+use tokio_postgres::NoTls;
 use crate::data::visitor::{Visitor, latest_visitors};
-use crate::data::get_conn;
+use crate::data::get_pool;
 
 #[derive(Deserialize)]
 pub struct Pagination {
@@ -16,8 +19,10 @@ pub struct Pagination {
     ps: Option<i64>,
 }
 
-pub async fn adm_visitors(Query(pagination): Query<Pagination>) -> impl IntoResponse {
-    let pool = get_conn().await.unwrap();
+
+pub async fn adm_visitors(
+    State(pool): State<Pool<PostgresConnectionManager<NoTls>>>,
+    Query(pagination): Query<Pagination>) -> impl IntoResponse {
     let conn = pool.get().await.unwrap();
     let pn = pagination.pn.unwrap_or(0);
     let ps = pagination.ps.unwrap_or(10);

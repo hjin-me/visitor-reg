@@ -50,3 +50,4 @@ $RECYCLE.BIN/
 # Added by cargo
 
 /target
+configs/

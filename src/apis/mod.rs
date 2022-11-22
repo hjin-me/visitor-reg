@@ -1,4 +1,3 @@
-pub mod greets;
 pub mod adm_visitors;
 pub mod new_visitor;
 

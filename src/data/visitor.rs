@@ -105,9 +105,10 @@ mod tests {
     // Note this useful idiom: importing names from outer (for mod tests) scope.
     use super::*;
 
+    const pg_dsn :String = "host=localhost user=postgres password=example".to_string();
     #[tokio::test]
     async fn test_add() {
-        let pool = crate::data::get_conn().await.unwrap();
+        let pool = crate::data::get_pool(&pg_dsn).await.unwrap();
         let conn = pool.get().await.unwrap();
         println!("{:?}", new_visitor(&conn,
                                      &"test".to_string(),
@@ -119,7 +120,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_query() {
-        let pool = crate::data::get_conn().await.unwrap();
+        let pool = crate::data::get_pool(&pg_dsn).await.unwrap();
         let conn = pool.get().await.unwrap();
         println!("{:?} ", latest_visitors(&conn, 0, 3).await.unwrap());
         // assert_eq!(1, 2)
@@ -128,7 +129,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_query_one() {
-        let pool = crate::data::get_conn().await.unwrap();
+        let pool = crate::data::get_pool(&pg_dsn).await.unwrap();
         let conn = pool.get().await.unwrap();
         println!("{:?} ", get_one_visitor(&conn).await.unwrap());
         assert_eq!("aaaa", get_one_visitor(&conn).await.unwrap().appellation);

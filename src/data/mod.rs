@@ -1,5 +1,6 @@
 pub mod visitor;
 
+use std::borrow::Borrow;
 use axum::{
     http::{StatusCode},
 };
@@ -7,19 +8,13 @@ use bb8::{Pool};
 use bb8_postgres::PostgresConnectionManager;
 use tokio_postgres::NoTls;
 
-pub async fn get_conn() -> Result<Pool<PostgresConnectionManager<NoTls>>, String> {
+pub async fn get_pool(pg_dsn: &String) -> Result<Pool<PostgresConnectionManager<NoTls>>, String> {
 
     // set up connection pool
     let manager =
-        PostgresConnectionManager::new_from_stringlike("host=localhost user=postgres password=example", NoTls)
+        PostgresConnectionManager::new_from_stringlike(pg_dsn, NoTls)
             .unwrap();
     Pool::builder().build(manager).await.map_err(|e| e.to_string())
-
-    // // build our application with some routes
-    // let app = Router::with_state(pool).route(
-    //     "/",
-    //     get(using_connection_pool_extractor).post(using_connection_extractor),
-    // );
 }
 
 // type ConnectionPool = Pool<PostgresConnectionManager<NoTls>>;

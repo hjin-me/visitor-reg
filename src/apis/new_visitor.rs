@@ -4,28 +4,33 @@ use axum::{
     http::StatusCode,
     response::{Html, IntoResponse, Response},
 };
+use axum::extract::State;
 use serde::Deserialize;
 use uuid::Uuid;
 use crate::data::visitor;
-use crate::data::get_conn;
+use crate::data::get_pool;
 use crate::data::visitor::Visitor;
+use bb8::Pool;
+use bb8_postgres::PostgresConnectionManager;
+use tokio_postgres::NoTls;
 
 #[derive(Deserialize)]
-pub struct NewVisitor {
+pub struct NewVisitorParams {
     appellation: String,
     company: String,
     invited_by: String,
     mobile_phone_no: String,
-
 }
 
-pub async fn new_visitor_page() -> impl IntoResponse {
+
+pub async fn new_visitor_get() -> impl IntoResponse {
     let template = PageTemplate {};
     crate::apis::HtmlTemplate(template)
 }
 
-pub async fn new_visitor(Form(v): Form<NewVisitor>) -> impl IntoResponse {
-    let pool = get_conn().await.unwrap();
+pub async fn new_visitor_post(
+    State(pool): State<Pool<PostgresConnectionManager<NoTls>>>,
+    Form(v): Form<NewVisitorParams>) -> impl IntoResponse {
     let conn = pool.get().await.unwrap();
     visitor::new_visitor(&conn, &v.appellation,
                          &v.company,
@@ -37,7 +42,6 @@ pub async fn new_visitor(Form(v): Form<NewVisitor>) -> impl IntoResponse {
     };
     crate::apis::HtmlTemplate(template)
 }
-
 
 #[derive(Template)]
 #[template(path = "new_visitor.html")]

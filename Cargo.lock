@@ -1167,9 +1167,11 @@ dependencies = [
  "bb8",
  "bb8-postgres",
  "serde",
+ "serde_derive",
  "time",
  "tokio",
  "tokio-postgres",
+ "toml",
  "tracing",
  "uuid",
 ]
