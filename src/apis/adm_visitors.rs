@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use askama::Template;
 use axum::{
     extract::{Query, State},
@@ -11,7 +10,6 @@ use time::format_description;
 use time::format_description::FormatItem;
 use tokio_postgres::NoTls;
 use crate::data::visitor::{Visitor, latest_visitors};
-use crate::data::get_pool;
 
 #[derive(Deserialize)]
 pub struct Pagination {

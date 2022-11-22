@@ -1,15 +1,11 @@
 use askama::Template;
 use axum::{
-    extract::{Query, Form},
-    http::StatusCode,
-    response::{Html, IntoResponse, Response},
+    extract::{Form},
+    response::{IntoResponse},
 };
 use axum::extract::State;
 use serde::Deserialize;
-use uuid::Uuid;
 use crate::data::visitor;
-use crate::data::get_pool;
-use crate::data::visitor::Visitor;
 use bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
 use tokio_postgres::NoTls;

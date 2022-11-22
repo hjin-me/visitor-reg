@@ -1,18 +1,13 @@
 mod apis;
 mod data;
 
-use std::borrow::Borrow;
-use std::env;
-use std::sync::Arc;
+use std::{env, fs};
 use axum::{
     routing::{get},
     Router,
 };
-use bb8::Pool;
-use bb8_postgres::PostgresConnectionManager;
 use toml;
 use serde_derive::Deserialize;
-use tokio_postgres::NoTls;
 use crate::apis::adm_visitors::{adm_visitors};
 use crate::apis::new_visitor::{new_visitor_get, new_visitor_post};
 use crate::data::get_pool;
@@ -35,9 +30,14 @@ async fn main() {
     // // The first argument is the path that was used to call the program.
     // println!("My path is {}.", args[0]);
     // let conf: Config = toml::from_str(args[1].as_str()).unwrap();
-    let conf = Config {
-        pg_dsn: "host=localhost user=postgres password=example".to_string()
-    };
+    let conf_path = env::var_os("CONF").expect("CONF env var must be set");
+    let contents = fs::read_to_string(conf_path)
+        .expect("Should have been able to read the file");
+    let conf: Config = toml::from_str(contents.as_str()).unwrap();
+    // let conf = Config {
+    //     pg_dsn: "host=localhost user=postgres password=example".to_string()
+    // };
+    println!("pg_dsn: {}", conf.pg_dsn);
     let p = get_pool(&conf.pg_dsn).await.unwrap();
     // let pool: &'static Pool<PostgresConnectionManager<NoTls>> = get_pool(&conf.pg_dsn).await.unwrap().borrow();
 
