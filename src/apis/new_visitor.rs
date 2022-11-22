@@ -28,11 +28,7 @@ pub async fn new_visitor_post(
     State(pool): State<Pool<PostgresConnectionManager<NoTls>>>,
     Form(v): Form<NewVisitorParams>) -> impl IntoResponse {
     let conn = pool.get().await.unwrap();
-    visitor::new_visitor(&conn, &v.appellation,
-                         &v.company,
-                         &v.invited_by,
-                         &v.mobile_phone_no,
-    ).await.unwrap();
+    visitor::new_visitor(&conn, &v.appellation, &v.mobile_phone_no, &v.company, &v.invited_by).await.unwrap();
     let template = AfterPostTemplate {
         appellation: v.appellation,
     };

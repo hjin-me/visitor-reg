@@ -23,7 +23,7 @@ pub async fn adm_visitors(
     Query(pagination): Query<Pagination>) -> impl IntoResponse {
     let conn = pool.get().await.unwrap();
     let pn = pagination.pn.unwrap_or(0);
-    let ps = pagination.ps.unwrap_or(10);
+    let ps = pagination.ps.unwrap_or(20);
     let vs = latest_visitors(&conn, pn, ps)
         .await.unwrap();
     let format = format_description::parse(
