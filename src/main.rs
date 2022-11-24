@@ -18,6 +18,7 @@ use crate::data::get_pool;
 #[derive(Debug, Deserialize)]
 struct Config {
     pg_dsn: String,
+    session_secret: String,
 }
 
 
@@ -44,6 +45,7 @@ async fn main() {
     // let pool: &'static Pool<PostgresConnectionManager<NoTls>> = get_pool(&conf.pg_dsn).await.unwrap().borrow();
     let app_state = AppState {
         pool: p,
+        session_secret: conf.session_secret,
     };
 
     // build our application with a single route

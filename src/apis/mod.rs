@@ -1,5 +1,6 @@
 pub mod adm_visitors;
 pub mod new_visitor;
+mod auth;
 
 
 use axum::{
@@ -34,6 +35,7 @@ impl<T> IntoResponse for HtmlTemplate<T>
 #[derive(Clone)]
 pub struct AppState {
     pub pool: Pool<PostgresConnectionManager<NoTls>>,
+    pub session_secret: String,
 }
 
 

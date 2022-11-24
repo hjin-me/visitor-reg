@@ -7,6 +7,7 @@ use serde::Deserialize;
 use time::format_description;
 use time::format_description::FormatItem;
 use crate::apis::{DatabaseConnection};
+use crate::apis::auth::AuthSession;
 use crate::data::visitor::{Visitor, latest_visitors};
 
 #[derive(Deserialize)]
@@ -18,6 +19,7 @@ pub struct Pagination {
 
 pub async fn adm_visitors(
     DatabaseConnection(pool): DatabaseConnection,
+    AuthSession(s): AuthSession,
     Query(pagination): Query<Pagination>) -> impl IntoResponse {
     let pn = pagination.pn.unwrap_or(0);
     let ps = pagination.ps.unwrap_or(20);
@@ -28,6 +30,7 @@ pub async fn adm_visitors(
         "[year]-[month]-[day] [hour]:[minute]",
     ).unwrap();
 
+    println!("{:?}", s);
     let template = HelloTemplate {
         pn,
         ps,

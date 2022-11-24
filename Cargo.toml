@@ -7,10 +7,11 @@ edition = "2021"
 
 [dependencies]
 askama = { version = "0.11.1" }
-axum = { version = "0.6.0-rc.4", features = ["http2", "macros"] }
+axum = { version = "0.6.0-rc.5", features = ["http2", "macros", "headers"] }
 bb8 = "0.8.0"
 bb8-postgres = "0.8.1"
-serde = "1.0.147"
+jsonwebtoken = { version = "8", default-features = false }
+serde = { version = "1.0.147", features = ["derive"] }
 serde_derive = "1.0.147"
 time = { version = "0.3", features = ["local-offset", "serde", "formatting", "macros"] }
 tokio = { version = "1.21.2", features = ["full"] }
