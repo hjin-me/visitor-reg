@@ -1,14 +1,12 @@
 use askama::Template;
 use axum::{
-    extract::{Query, State},
+    extract::{Query},
     response::{IntoResponse},
 };
-use bb8::Pool;
-use bb8_postgres::PostgresConnectionManager;
 use serde::Deserialize;
 use time::format_description;
 use time::format_description::FormatItem;
-use tokio_postgres::NoTls;
+use crate::apis::{DatabaseConnection};
 use crate::data::visitor::{Visitor, latest_visitors};
 
 #[derive(Deserialize)]
@@ -19,11 +17,11 @@ pub struct Pagination {
 
 
 pub async fn adm_visitors(
-    State(pool): State<Pool<PostgresConnectionManager<NoTls>>>,
+    DatabaseConnection(pool): DatabaseConnection,
     Query(pagination): Query<Pagination>) -> impl IntoResponse {
-    let conn = pool.get().await.unwrap();
     let pn = pagination.pn.unwrap_or(0);
     let ps = pagination.ps.unwrap_or(20);
+    let conn = pool.get().await.unwrap();
     let vs = latest_visitors(&conn, pn, ps)
         .await.unwrap();
     let format = format_description::parse(

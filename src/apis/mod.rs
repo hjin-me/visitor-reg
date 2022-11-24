@@ -7,6 +7,11 @@ use axum::{
     response::{Html, IntoResponse, Response},
 };
 use askama::Template;
+use axum::extract::{FromRef, FromRequestParts};
+use axum::http::request::Parts;
+use bb8::{Pool};
+use bb8_postgres::PostgresConnectionManager;
+use tokio_postgres::NoTls;
 
 struct HtmlTemplate<T>(T);
 
@@ -25,3 +30,29 @@ impl<T> IntoResponse for HtmlTemplate<T>
         }
     }
 }
+
+#[derive(Clone)]
+pub struct AppState {
+    pub pool: Pool<PostgresConnectionManager<NoTls>>,
+}
+
+
+// we can also write a custom extractor that grabs a connection from the pool
+// which setup is appropriate depends on your application
+pub struct DatabaseConnection(Pool<PostgresConnectionManager<NoTls>>);
+
+#[axum::async_trait]
+impl<S> FromRequestParts<S> for DatabaseConnection
+    where
+        AppState: FromRef<S>,
+        S: Send + Sync,
+{
+    type Rejection = (StatusCode, String);
+
+    async fn from_request_parts(_parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let app_state = AppState::from_ref(state);
+
+        Ok(Self(app_state.pool))
+    }
+}
+

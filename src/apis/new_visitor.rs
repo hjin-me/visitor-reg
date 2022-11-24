@@ -3,12 +3,9 @@ use axum::{
     extract::{Form},
     response::{IntoResponse},
 };
-use axum::extract::State;
 use serde::Deserialize;
 use crate::data::visitor;
-use bb8::Pool;
-use bb8_postgres::PostgresConnectionManager;
-use tokio_postgres::NoTls;
+use crate::apis::{DatabaseConnection};
 
 #[derive(Deserialize)]
 pub struct NewVisitorParams {
@@ -25,7 +22,7 @@ pub async fn new_visitor_get() -> impl IntoResponse {
 }
 
 pub async fn new_visitor_post(
-    State(pool): State<Pool<PostgresConnectionManager<NoTls>>>,
+    DatabaseConnection(pool): DatabaseConnection,
     Form(v): Form<NewVisitorParams>) -> impl IntoResponse {
     let conn = pool.get().await.unwrap();
     visitor::new_visitor(&conn, &v.appellation, &v.mobile_phone_no, &v.company, &v.invited_by).await.unwrap();

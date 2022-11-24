@@ -9,6 +9,7 @@ use axum::{
 use toml;
 use serde_derive::Deserialize;
 use crate::apis::adm_visitors::{adm_visitors};
+use crate::apis::AppState;
 use crate::apis::new_visitor::{new_visitor_get, new_visitor_post};
 use crate::data::get_pool;
 
@@ -18,6 +19,7 @@ use crate::data::get_pool;
 struct Config {
     pg_dsn: String,
 }
+
 
 #[tokio::main]
 async fn main() {
@@ -40,13 +42,16 @@ async fn main() {
     println!("pg_dsn: {}", conf.pg_dsn);
     let p = get_pool(&conf.pg_dsn).await.unwrap();
     // let pool: &'static Pool<PostgresConnectionManager<NoTls>> = get_pool(&conf.pg_dsn).await.unwrap().borrow();
+    let app_state = AppState {
+        pool: p,
+    };
 
     // build our application with a single route
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
         .route("/adm/visitors", get(adm_visitors))
         .route("/new-visitor", get(new_visitor_get).post(new_visitor_post))
-        .with_state(p);
+        .with_state(app_state);
 
 
     // run it with hyper on localhost:3000
