@@ -1,6 +1,7 @@
 pub mod adm_visitors;
 pub mod new_visitor;
 mod auth;
+pub mod login;
 
 
 use axum::{
@@ -9,7 +10,10 @@ use axum::{
 };
 use askama::Template;
 use axum::extract::{FromRef, FromRequestParts};
+use axum::headers::{HeaderName};
+use axum::http::HeaderValue;
 use axum::http::request::Parts;
+use axum::response::{IntoResponseParts, ResponseParts};
 use bb8::{Pool};
 use bb8_postgres::PostgresConnectionManager;
 use tokio_postgres::NoTls;
@@ -58,3 +62,32 @@ impl<S> FromRequestParts<S> for DatabaseConnection
     }
 }
 
+
+// Hypothetical helper type for setting a single header
+struct SetHeader<'a>(&'a str, &'a str);
+
+impl<'a> IntoResponseParts for SetHeader<'a> {
+    type Error = (StatusCode, String);
+
+    fn into_response_parts(self, mut res: ResponseParts) -> Result<ResponseParts, Self::Error> {
+        match (self.0.parse::<HeaderName>(), self.1.parse::<HeaderValue>()) {
+            (Ok(name), Ok(value)) => {
+                res.headers_mut().insert(name, value);
+            }
+            (Err(_), _) => {
+                return Err((
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Invalid header name {}", self.0),
+                ));
+            }
+            (_, Err(_)) => {
+                return Err((
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    format!("Invalid header value {}", self.1),
+                ));
+            }
+        }
+
+        Ok(res)
+    }
+}

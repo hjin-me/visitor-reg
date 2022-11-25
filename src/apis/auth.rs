@@ -3,7 +3,7 @@ use axum::headers::Authorization;
 use axum::headers::authorization::Bearer;
 use axum::http::request::Parts;
 use axum::http::StatusCode;
-use jsonwebtoken::{decode, DecodingKey, Validation};
+use jsonwebtoken::{decode, DecodingKey, EncodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use crate::apis::AppState;
 
@@ -63,6 +63,31 @@ impl<S> FromRequestParts<S> for AuthSession
         }
     }
 }
+
+pub fn gen_exchange_token(secret: &[u8], sub: &String) -> String {
+    // HS256
+    let token = jsonwebtoken::encode(&jsonwebtoken::Header::default(), &Claims {
+        exp: time::OffsetDateTime::now_utc().unix_timestamp() as usize + 300,
+        nbf: time::OffsetDateTime::now_utc().unix_timestamp() as usize - 300,
+        sub: sub.clone(),
+    }, &EncodingKey::from_secret(secret)).unwrap();
+
+    token
+}
+
+pub fn gen_access_token(secret: &[u8], exchange_token: String) -> String {
+    let token = decode::<Claims>(
+        &exchange_token, &DecodingKey::from_secret(secret),
+        &Validation::default()).unwrap();
+
+    let token = jsonwebtoken::encode(&jsonwebtoken::Header::default(), &Claims {
+        exp: time::OffsetDateTime::now_utc().unix_timestamp() as usize + 24 * 3600,
+        nbf: time::OffsetDateTime::now_utc().unix_timestamp() as usize - 300,
+        sub: token.claims.sub,
+    }, &EncodingKey::from_secret(secret)).unwrap();
+    token
+}
+
 
 #[cfg(test)]
 mod tests {

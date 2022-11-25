@@ -10,6 +10,7 @@ use toml;
 use serde_derive::Deserialize;
 use crate::apis::adm_visitors::{adm_visitors};
 use crate::apis::AppState;
+use crate::apis::login::{login_get, login_post, save_session_get};
 use crate::apis::new_visitor::{new_visitor_get, new_visitor_post};
 use crate::data::get_pool;
 
@@ -53,6 +54,8 @@ async fn main() {
         .route("/", get(|| async { "Hello, World!" }))
         .route("/adm/visitors", get(adm_visitors))
         .route("/new-visitor", get(new_visitor_get).post(new_visitor_post))
+        .route("/adm/in", get(login_get).post(login_post))
+        .route("/adm/exchange", get(save_session_get))
         .with_state(app_state);
 
 
