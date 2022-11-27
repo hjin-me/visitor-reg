@@ -3,9 +3,7 @@ use axum::{
     extract::{Query},
     response::{IntoResponse},
 };
-use axum::http::header::SET_COOKIE;
 use axum::http::StatusCode;
-use axum::response::AppendHeaders;
 use serde::Deserialize;
 use time::format_description;
 use time::format_description::FormatItem;
@@ -42,9 +40,6 @@ pub async fn adm_visitors(
     };
     (
         StatusCode::OK,
-        AppendHeaders([
-            (SET_COOKIE, "foo=bar"),
-        ]),
         crate::apis::HtmlTemplate(template),
     )
 }

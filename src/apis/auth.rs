@@ -1,6 +1,6 @@
 use axum::extract::{FromRef, FromRequestParts, TypedHeader};
-use axum::headers::Authorization;
-use axum::headers::authorization::Bearer;
+use axum::headers::{ Cookie};
+// use axum::headers::authorization::Bearer;
 use axum::http::request::Parts;
 use axum::http::StatusCode;
 use jsonwebtoken::{decode, DecodingKey, EncodingKey, Validation};
@@ -15,11 +15,12 @@ pub struct Session {
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
-    exp: usize,
     // Required (validate_exp defaults to true in validation). Expiration time (as UTC timestamp)
-    nbf: usize,
+    exp: usize,
     // Optional. Not Before (as UTC timestamp)
-    sub: String,         // Optional. Subject (whom token refers to)
+    nbf: usize,
+    // Optional. Subject (whom token refers to)
+    sub: String,
 }
 
 // we can also write a custom extractor that grabs a connection from the pool
@@ -35,32 +36,55 @@ impl<S> FromRequestParts<S> for AuthSession
     type Rejection = (StatusCode, String);
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        // You can either call them directly...
-        match TypedHeader::<Authorization<Bearer>>::from_request_parts(parts, state).await {
-            Ok(TypedHeader(Authorization(token_encoded))) => {
-                let app_state = AppState::from_ref(state);
-                match decode::<Claims>(&token_encoded.token(),
-                                       &DecodingKey::from_secret(&app_state.session_secret.as_bytes()),
-                                       &Validation::default()) {
-                    Ok(token) => {
-                        Ok(Self(Session {
-                            uid: token.claims.sub,
-                            display_name: "from token".to_string(),
-                        }))
+        match TypedHeader::<Cookie>::from_request_parts(parts, state).await {
+            Ok(TypedHeader(cookie)) => {
+                match cookie.get("x-token") {
+                    Some(token) => {
+                        let app_state = AppState::from_ref(state);
+                        match decode::<Claims>(&token,
+                                               &DecodingKey::from_secret(&app_state.session_secret.as_bytes()),
+                                               &Validation::default()) {
+                            Ok(token) => {
+                                Ok(Self(Session {
+                                    uid: token.claims.sub,
+                                    display_name: "from token".to_string(),
+                                }))
+                            }
+                            Err(err) => Err((StatusCode::UNAUTHORIZED, format!("Failed to decode token. Error: {}", err))),
+                        }
                     }
-                    Err(err) => Ok(Self(Session {
-                        uid: "anonymous".to_string(),
-                        display_name: err.to_string(),
-                    })),
+                    None =>
+                        Err((StatusCode::UNAUTHORIZED, format!("身份认证失败"))),
                 }
             }
-            Err(_) => {
-                Ok(Self(Session {
-                    uid: "anonymous".to_string(),
-                    display_name: "没有Token".to_string(),
-                }))
-            }
+            Err(err) => Err((StatusCode::UNAUTHORIZED, format!("身份认证失败, {}", err)))
         }
+        // You can either call them directly...
+        // match TypedHeader::<Authorization<Bearer>>::from_request_parts(parts, state).await {
+        //     Ok(TypedHeader(Authorization(token_encoded))) => {
+        //         let app_state = AppState::from_ref(state);
+        //         match decode::<Claims>(&token_encoded.token(),
+        //                                &DecodingKey::from_secret(&app_state.session_secret.as_bytes()),
+        //                                &Validation::default()) {
+        //             Ok(token) => {
+        //                 Ok(Self(Session {
+        //                     uid: token.claims.sub,
+        //                     display_name: "from token".to_string(),
+        //                 }))
+        //             }
+        //             Err(err) => Ok(Self(Session {
+        //                 uid: "anonymous".to_string(),
+        //                 display_name: err.to_string(),
+        //             })),
+        //         }
+        //     }
+        //     Err(_) => {
+        //         Ok(Self(Session {
+        //             uid: "anonymous".to_string(),
+        //             display_name: "没有Token".to_string(),
+        //         }))
+        //     }
+        // }
     }
 }
 

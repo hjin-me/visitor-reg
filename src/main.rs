@@ -20,6 +20,8 @@ use crate::data::get_pool;
 struct Config {
     pg_dsn: String,
     session_secret: String,
+    default_uid: String,
+    default_password: String,
 }
 
 
@@ -47,6 +49,9 @@ async fn main() {
     let app_state = AppState {
         pool: p,
         session_secret: conf.session_secret,
+
+        allowed_uid: conf.default_uid,
+        allowed_password: conf.default_password,
     };
 
     // build our application with a single route
