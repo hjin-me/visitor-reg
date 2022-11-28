@@ -10,28 +10,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<table class="table">
-    <thead>
-    <tr>
-        <th>访客姓名</th>
-        <th>电话</th>
-        <th>公司</th>
-        <th>拜访时间</th>
-        <th>拜访对象</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for s in visitors %}
-    <tr>
-        <td>{{ s.appellation}}</td>
-        <td>{{ s.mobile_phone_no }}</td>
-        <td>{{ s.company }}</td>
-        <td>{{ s.last_visit_date.format(time_format)? }}</td>
-        <td>{{ s.invited_by }}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="container">
+    <table class="table">
+        <thead>
+        <tr>
+            <th>访客姓名</th>
+            <th>电话</th>
+            <th>公司</th>
+            <th>拜访时间</th>
+            <th>拜访对象</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for s in visitors %}
+        <tr>
+            <td>{{ s.appellation}}</td>
+            <td>{{ s.mobile_phone_no }}</td>
+            <td>{{ s.company }}</td>
+            <td>{{ s.last_visit_date.format(time_format)? }}</td>
+            <td>{{ s.invited_by }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <a href="/adm/export" target="_blank" class="btn link-primary">导出 Excel</a>
+</div>
+
+
 <!--<nav aria-label="...">-->
 <!--    <ul class="pagination">-->
 <!--        <li class="page-item disabled">-->
