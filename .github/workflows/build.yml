@@ -2,8 +2,8 @@ name: Build and Deploy
 on:
   push:
     # Sequence of patterns matched against refs/heads
-    branches:
-      - main         # Push events on master branch
+    # branches:
+    #   - main         # Push events on master branch
     # Sequence of patterns matched against refs/tags
     tags:
       - "**"             # Push events to v1 tag

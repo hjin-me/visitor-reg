@@ -1,4 +1,5 @@
 FROM rust:latest as builder
+RUN apt-get update && apt-get install -y librust-clang-sys-dev
 ENV CARGO_HOME /build/.cargo
 WORKDIR /build
 COPY . .
