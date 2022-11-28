@@ -1,18 +1,20 @@
 mod apis;
 mod data;
 
-use std::{env, fs};
+use std::{fs};
 use axum::{
     routing::{get},
     Router,
 };
 use toml;
 use serde_derive::Deserialize;
+use tracing::{Level, trace, info};
 use crate::apis::adm_visitors::{adm_visitors, export_visitors};
 use crate::apis::AppState;
 use crate::apis::login::{login_get, login_post, save_session_get};
 use crate::apis::new_visitor::{new_visitor_get, new_visitor_post};
 use crate::data::get_pool;
+use clap::Parser;
 
 /// This is what we're going to decode into. Each field is optional, meaning
 /// that it doesn't have to be present in TOML.
@@ -25,25 +27,37 @@ struct Config {
 }
 
 
+/// Simple program to greet a person
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Number of times to greet
+    #[arg(short, long, default_value = "./config.toml")]
+    config: String,
+}
+
 #[tokio::main]
 async fn main() {
-    // let args: Vec<String> = env::args().collect();
-    // if args.len() < 2 {
-    //     println!("visitorreg requires a config file");
-    //     return;
-    // }
-    //
-    // // The first argument is the path that was used to call the program.
-    // println!("My path is {}.", args[0]);
-    // let conf: Config = toml::from_str(args[1].as_str()).unwrap();
-    let conf_path = env::var_os("CONF").expect("CONF env var must be set");
-    let contents = fs::read_to_string(conf_path)
+    let args = Args::parse();
+    // a builder for `FmtSubscriber`.
+    let subscriber = tracing_subscriber::FmtSubscriber::builder()
+        // all spans/events with a level higher than TRACE (e.g, debug, info, warn, etc.)
+        // will be written to stdout.
+        .with_max_level(Level::TRACE)
+        // completes the builder.
+        .finish();
+
+    tracing::subscriber::set_global_default(subscriber)
+        .expect("setting default subscriber failed");
+    info!("Starting up {}", &args.config);
+
+    let contents = fs::read_to_string(&args.config)
         .expect("Should have been able to read the file");
     let conf: Config = toml::from_str(contents.as_str()).unwrap();
     // let conf = Config {
     //     pg_dsn: "host=localhost user=postgres password=example".to_string()
     // };
-    println!("pg_dsn: {}", conf.pg_dsn);
+    trace!("pg_dsn: {}", conf.pg_dsn);
     let p = get_pool(&conf.pg_dsn).await.unwrap();
     // let pool: &'static Pool<PostgresConnectionManager<NoTls>> = get_pool(&conf.pg_dsn).await.unwrap().borrow();
     let app_state = AppState {

@@ -11,6 +11,7 @@ use axum::response::AppendHeaders;
 use serde::Deserialize;
 use time::format_description;
 use time::format_description::FormatItem;
+use tracing::trace;
 use xlsxwriter::Workbook;
 use crate::apis::{DatabaseConnection};
 use crate::apis::auth::AuthSession;
@@ -36,7 +37,7 @@ pub async fn adm_visitors(
         "[year]-[month]-[day] [hour]:[minute]",
     ).unwrap();
 
-    println!("{:?}", s);
+    trace!("adm_visitors: pn={}, ps={}, {:?}", pn, ps, s);
     let template = HelloTemplate {
         pn,
         ps,

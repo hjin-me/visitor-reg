@@ -14,25 +14,6 @@ pub struct Visitor {
     pub invited_by: String,
 }
 
-async fn get_one_visitor(
-    conn: &PooledConnection<'_, PostgresConnectionManager<NoTls>>,
-) -> Result<Visitor, String> {
-    let row = conn
-        .query_one("select id, appellation, mobile_phone_no, last_visit_at, company, invited_by from visitors limit 1", &[])
-        .await
-        .map_err(db_error)?;
-    // let x: Timestamp<Instant> = row.try_get(2).map_err(internal_error)?;
-    let r: Visitor = Visitor {
-        id: row.try_get(0).map_err(db_error)?,
-        appellation: row.try_get(1).map_err(db_error)?,
-        company: row.try_get(4).map_err(db_error)?,
-        mobile_phone_no: row.try_get(2).map_err(db_error)?,
-        last_visit_date: row.try_get(3).map_err(db_error)?,
-        invited_by: row.try_get(5).map_err(db_error)?,
-    };
-
-    Ok(r)
-}
 
 pub async fn new_visitor(
     conn: &PooledConnection<'_, PostgresConnectionManager<NoTls>>,

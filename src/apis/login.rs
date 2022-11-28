@@ -8,6 +8,7 @@ use axum::http::header::{LOCATION, SET_COOKIE};
 use axum::http::StatusCode;
 use axum::response::AppendHeaders;
 use serde::Deserialize;
+use tracing::trace;
 use url::form_urlencoded::byte_serialize;
 use crate::apis::{AppState};
 use crate::apis::auth::{gen_access_token, gen_exchange_token};
@@ -20,7 +21,7 @@ pub struct TicketParams {
 pub async fn save_session_get(
     State(s): State<AppState>,
     Query(tp): Query<TicketParams>) -> impl IntoResponse {
-    println!("ticket: {}", tp.ticket);
+    trace!("ticket: {}", tp.ticket);
     let token = gen_access_token(s.session_secret.as_bytes(), tp.ticket);
     (
         StatusCode::FOUND,
